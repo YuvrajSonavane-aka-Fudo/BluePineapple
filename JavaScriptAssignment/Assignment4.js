@@ -1,4 +1,10 @@
-let arr = [1,2,3,4,5,6,7,8,9,10]
+let arr  = [];
+for(let i = 0 ; i<10 ; i++){
+    a = Math.random()
+    arr.push(a)
+}
+
+console.log(arr)
 
 function operations(arr){
     console.log("The maximum values is " + Math.max(...arr))
