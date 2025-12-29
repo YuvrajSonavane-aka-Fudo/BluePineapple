@@ -1,0 +1,45 @@
+insert into wards values (1, 1 , 1 ,"A1" ) , (2,2,2,"A2") , (3,3,3,"A3");
+
+aggregation functions
+joins 
+group by and having
+
+
+update patients 
+set disease = case
+    when id = 1 then "Homeopathy"
+    when id = 2 then "Homeopathy"
+    when id = 4 then "Brain Surgery"
+    when id = 5 then "Heart Disease"
+end
+where id in (1,2,4,5);
+    
+alter table patients add doctor_assigned_id int , foreign key(doctor_assigned_id) references doctors(ID);
+
+update patients 
+set doctor_assigned_id = case
+    when id = 1 then 1
+    when id = 2  then 1
+    when id = 4 then 2
+    when id = 5 then 3
+end
+where id in (1,2,4,5);
+
+select doctors.ID from doctors 
+Inner join patients on patients.doctor_assigned_id = doctors.ID ;
+
+select patients.ID , patients.phone, patients.name , patients.disease , doctors.name as doctorname from patients
+left join doctors on patients.doctor_assigned_id = doctors.ID;
+
+
+select doctors.ID , doctors.name , doctors.speciality , patients.name as patientName from patients
+right join doctors on patients.doctor_assigned_id = doctors.ID; 
+
+select * from patients
+join doctors on patients.doctor_assigned_id = doctors.ID;
+
+select count(*) from patients
+where patients.disease = "Homeopathy";
+
+select disease , count(name) from patients
+Group by disease;
