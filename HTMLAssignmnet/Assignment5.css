@@ -1,0 +1,151 @@
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  color:#f4f4f4;
+  background:#080808;
+}
+
+header{
+  background:#3b0f0f;
+  color:#fff;
+  padding:12px 0;
+}
+header nav{
+  width:94%;
+  max-width:1000px;
+  margin:0 auto;
+  display:flex;
+  gap:14px;
+}
+header nav a{
+  color:#f4f4f4;
+  text-decoration:none;
+  font-size:14px;
+}
+header nav a:hover,header nav a:focus{
+  text-decoration:underline;
+}
+
+.hero{
+  width:100%;
+  min-height:360px;
+  background-image:linear-gradient(rgba(11,6,6,0.5),rgba(11,6,6,0.5)),url('Sekiro1.jpg');
+  background-size:cover;
+  background-position:center;
+  display:flex;
+  align-items:center;
+  color:#fff;
+}
+.hero-inner{
+  width:94%;
+  max-width:1000px;
+  margin:0 auto;
+}
+.hero h1{
+  margin:0 0 8px 0;
+  font-size:32px;
+  color:#fff;
+}
+.lead{
+  margin:8px 0 14px 0;
+  max-width:640px;
+  color:rgba(255,240,240,0.95);
+}
+
+.btn{
+  display:inline-block;
+  padding:9px 14px;
+  background:#800000;
+  color:#fff;
+  text-decoration:none;
+  border-radius:4px;
+  margin-right:10px;
+}
+.btn.secondary{
+  background:transparent;
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.18);
+}
+
+.aboutMe,.skills{
+  width:94%;
+  max-width:1000px;
+  margin:18px auto;
+  background:#0d0d0d;
+  border:1px solid #2b0b0b;
+  padding:14px;
+  color:#eaeaea;
+}
+.aboutMe h2,.skills h2{
+  margin-top:0;
+  color:#ffdddd;
+}
+
+.projects-grid{
+  width:94%;
+  max-width:1000px;
+  margin:14px auto 28px auto;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+.projectList h1{
+  text-align:center;
+  margin-bottom:14px;
+  color:#ffdddd;
+}
+.project-card{
+  background:#0d0d0d;
+  border:1px solid #2b0b0b;
+  border-radius:6px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.project-card figure{margin:0}
+.project-card img{display:block;width:100%;height:160px;object-fit:cover}
+.project-card .card-content{padding:12px;color:#eaeaea}
+.project-card h3{margin:0 0 8px 0;color:#ffdddd}
+.project-card p{margin:0 0 10px 0;color:#dcdcdc;font-size:14px}
+
+.contactForm{width:94%;max-width:700px;margin:18px auto;background:#0d0d0d;border:1px solid #2b0b0b;padding:14px;color:#eaeaea}
+.contactForm h1{margin-top:0;color:#ffdddd}
+.contactForm .form label{display:block;margin:10px 0 6px 0}
+.contactForm .form input,.contactForm .form textarea{width:100%;padding:10px;border-radius:4px;border:1px solid #2b0b0b;background:#111;color:#fff}
+.contactForm .form textarea{min-height:120px}
+.contactForm .form .btn{display:inline-block;padding:9px 14px;background:#800000;color:#fff;border-radius:4px;margin-top:10px}
+
+footer{
+  background:#0b0b0b;
+  color:#cfcfcf;
+  padding:12px 0;
+  text-align:center;
+}
+
+@media(max-width:700px){
+  .hero{
+    min-height:220px;
+  }
+  .hero h1{
+    font-size:20px;
+  }
+  .lead{
+    max-width:100%;
+  }
+  .btn{
+    display:block;
+    margin:8px 0;
+  }
+  .aboutMe,.skills{
+    padding:10px;
+    margin:12px auto;
+  }
+  .projects-grid{grid-template-columns:1fr}
+  .project-card img{height:200px}
+  .projects-grid{gap:12px}
+}
