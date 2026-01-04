@@ -66,14 +66,17 @@ footer{
     flex-direction:column;
     padding:12px;
   }
-  aside.sidebar{flex-basis:auto}
+  
+  aside.sidebar{
+
+    flex-basis:auto
+}
 }
 
-nav a:hover,nav a:focus
-{
+nav a:hover,nav a:focus{
     text-decoration:underline
 }
-ul
-{
+
+ul{
     margin:0;padding-left:18px
 }
