@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Employee Management</title>
+  <link rel="stylesheet" href="index.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <h1>Employee Management</h1>
+
+  <div class="card">
+    <h2>Live Time (Tokyo)</h2>
+    <div id="time">Loading...</div>
+  </div>
+
+  <div class="card">
+    <h2>Employees</h2>
+    <table id="table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Name</th><th>Role</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Add Employee</h3>
+    <div class="form-row">
+      <input id="id" placeholder="ID">
+      <input id="name" placeholder="Name">
+      <input id="role" placeholder="Role">
+    </div>
+    <button onclick="addEmployee()">Add</button>
+  </div>
+
+  <div class="card">
+    <h3>Upload CSV</h3>
+    <input type="file" id="uploadFile">
+    <button onclick="upload()">Upload</button>
+    <progress id="uploadProgress" value="0" max="100"></progress>
+  </div>
+
+  <div class="card">
+    <h3>Download CSV</h3>
+    <button onclick="download()">Download</button>
+    <progress id="downloadProgress" value="0" max="100"></progress>
+  </div>
+</div>
+
+<script>
+async function loadEmployees() {
+  const res = await fetch("/employees");
+  const data = await res.json();
+  const tbody = document.querySelector("tbody");
+  tbody.innerHTML = "";
+  data.forEach(e => {
+    tbody.innerHTML += `<tr><td>${e.id}</td><td>${e.name}</td><td>${e.role}</td></tr>`;
+  });
+}
+loadEmployees();
+
+async function addEmployee() {
+  await fetch("/employees", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      id: id.value,
+      name: name.value,
+      role: role.value
+    })
+  });
+  loadEmployees();
+}
+
+function upload() {
+  const file = uploadFile.files[0];
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/upload");
+  xhr.upload.onprogress = e =>
+    uploadProgress.value = (e.loaded / e.total) * 100;
+  const form = new FormData();
+  form.append("file", file);
+  xhr.send(form);
+}
+
+async function download() {
+  const res = await fetch("/download");
+  const reader = res.body.getReader();
+  const len = +res.headers.get("Content-Length");
+  let received = 0;
+  const chunks = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.length;
+    downloadProgress.value = (received / len) * 100;
+  }
+
+  const blob = new Blob(chunks);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "employees.csv";
+  a.click();
+}
+
+const socket = io();
+socket.on("time", t => time.innerText = t);
+</script>
+
+</body>
+</html>
