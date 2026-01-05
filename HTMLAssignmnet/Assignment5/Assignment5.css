@@ -33,7 +33,7 @@ header nav a:hover,header nav a:focus{
 .hero{
   width:100%;
   min-height:360px;
-  background-image:linear-gradient(rgba(11,6,6,0.5),rgba(11,6,6,0.5)),url('Sekiro1.jpg');
+  background-image:linear-gradient(rgba(11,6,6,0.5),rgba(11,6,6,0.5)),url('img/Sekiro1.jpg');
   background-size:cover;
   background-position:center;
   display:flex;
