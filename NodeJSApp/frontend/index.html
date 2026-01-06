@@ -57,22 +57,38 @@ async function loadEmployees() {
   const data = await res.json();
   const tbody = document.querySelector("tbody");
   tbody.innerHTML = "";
-  data.forEach(e => {
+  data.forEach(raw => {
+    const e = {
+      id: raw.id || raw.Id || raw.ID || "",
+      name: raw.name || raw.Name || raw.NAME || "",
+      role: raw.role || raw.Role || raw.ROLE || ""
+    };
     tbody.innerHTML += `<tr><td>${e.id}</td><td>${e.name}</td><td>${e.role}</td></tr>`;
   });
 }
 loadEmployees();
 
 async function addEmployee() {
+  const idEl = document.getElementById("id");
+  const nameEl = document.getElementById("name");
+  const roleEl = document.getElementById("role");
+  const payload = {
+    id: idEl ? idEl.value.trim() : "",
+    name: nameEl ? nameEl.value.trim() : "",
+    role: roleEl ? roleEl.value.trim() : ""
+  };
+  if (!payload.id && !payload.name && !payload.role) {
+    alert("Please enter at least one field before adding.");
+    return;
+  }
   await fetch("/employees", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      id: id.value,
-      name: name.value,
-      role: role.value
-    })
+    body: JSON.stringify(payload)
   });
+  if (idEl) idEl.value = "";
+  if (nameEl) nameEl.value = "";
+  if (roleEl) roleEl.value = "";
   loadEmployees();
 }
 
@@ -90,22 +106,36 @@ function upload() {
 async function download() {
   const res = await fetch("/download");
   const reader = res.body.getReader();
-  const len = +res.headers.get("Content-Length");
+  const lenHeader = res.headers.get("content-length") || res.headers.get("Content-Length");
+  const len = lenHeader ? parseInt(lenHeader, 10) : NaN;
   let received = 0;
   const chunks = [];
+  const progressEl = document.getElementById("downloadProgress");
+
+  if (!isFinite(len) || len <= 0) {
+    progressEl.removeAttribute("value"); // indeterminate progress
+  } else {
+    progressEl.max = 100;
+    progressEl.value = 0;
+  }
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
     chunks.push(value);
     received += value.length;
-    downloadProgress.value = (received / len) * 100;
+    if (isFinite(len) && len > 0) {
+      progressEl.value = (received / len) * 100;
+    }
   }
+
+  if (isFinite(len) && len > 0) progressEl.value = 100;
+  else progressEl.removeAttribute("value");
 
   const blob = new Blob(chunks);
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "employees.csv";
+  a.download = "data.csv";
   a.click();
 }
 

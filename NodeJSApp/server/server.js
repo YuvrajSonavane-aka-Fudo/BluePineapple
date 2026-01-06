@@ -6,21 +6,43 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const app = express();
+const path = require("path");
 const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(express.json());
-app.use(express.static("../client"));
+app.use(express.static(path.join(__dirname, "../frontend")));
 
-const CSV_FILE = "./employees.csv";
+const CSV_FILE = path.join(__dirname, "data.csv");
 const upload = multer({ dest: "uploads/" });
 
 app.get("/employees", (req, res) => {
   const results = [];
+  if (!fs.existsSync(CSV_FILE)) return res.json(results);
   fs.createReadStream(CSV_FILE)
+    .on("error", err => {
+      console.error("CSV read error:", err);
+      return res.status(500).json({ error: "CSV read error", message: err.message });
+    })
     .pipe(csv())
     .on("data", data => results.push(data))
-    .on("end", () => res.json(results));
+    .on("end", () => {
+      // If parser returned indexed keys (_0,_1,...) map them to id,name,role
+      if (results.length > 0) {
+        const keys = Object.keys(results[0]);
+        if (keys.length && (/^_?0$/.test(keys[0]) || keys[0] === '0')) {
+          const mapped = results.map(r => ({
+            id: r._0 || r['0'] || "",
+            name: r._1 || r['1'] || "",
+            role: r._2 || r['2'] || ""
+          }));
+          // drop header row if it's present as first data row
+          if (mapped.length && /id/i.test(mapped[0].id) && /name/i.test(mapped[0].name)) mapped.shift();
+          return res.json(mapped);
+        }
+      }
+      return res.json(results);
+    });
 });
 
 app.post("/employees", (req, res) => {
@@ -35,8 +57,21 @@ app.post("/upload", upload.single("file"), (req, res) => {
 });
 
 app.get("/download", (req, res) => {
-  res.setHeader("Content-Disposition", "attachment; filename=employees.csv");
-  fs.createReadStream(CSV_FILE).pipe(res);
+  try {
+    const stat = fs.statSync(CSV_FILE);
+    res.setHeader("Content-Disposition", "attachment; filename=data.csv");
+    res.setHeader("Content-Length", stat.size);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    const stream = fs.createReadStream(CSV_FILE);
+    stream.on("error", err => {
+      console.error("Download stream error:", err);
+      if (!res.headersSent) res.status(500).end();
+    });
+    stream.pipe(res);
+  } catch (err) {
+    console.error("Download error:", err);
+    return res.status(500).json({ error: "Download error", message: err.message });
+  }
 });
 
 io.on("connection", socket => {
