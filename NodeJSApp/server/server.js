@@ -27,7 +27,6 @@ app.get("/employees", (req, res) => {
     .pipe(csv())
     .on("data", data => results.push(data))
     .on("end", () => {
-      // If parser returned indexed keys (_0,_1,...) map them to id,name,role
       if (results.length > 0) {
         const keys = Object.keys(results[0]);
         if (keys.length && (/^_?0$/.test(keys[0]) || keys[0] === '0')) {
@@ -36,7 +35,6 @@ app.get("/employees", (req, res) => {
             name: r._1 || r['1'] || "",
             role: r._2 || r['2'] || ""
           }));
-          // drop header row if it's present as first data row
           if (mapped.length && /id/i.test(mapped[0].id) && /name/i.test(mapped[0].name)) mapped.shift();
           return res.json(mapped);
         }
@@ -76,8 +74,8 @@ app.get("/download", (req, res) => {
 
 io.on("connection", socket => {
   setInterval(() => {
-    const time = new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Tokyo"
+    const time = new Date().toLocaleString("en-AU", {
+      timeZone: "Australia/Sydney"
     });
     socket.emit("time", time);
   }, 1000);
