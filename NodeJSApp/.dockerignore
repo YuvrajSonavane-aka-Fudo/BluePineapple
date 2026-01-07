@@ -1,0 +1,20 @@
+# Node
+node_modules
+npm-debug.log
+yarn.lock
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Git
+.git
+.gitignore
+
+# OS / Editor
+.DS_Store
+.vscode
+
+# Uploads & runtime data (optional)
+server/uploads
+server/data.csv
