@@ -1,0 +1,14 @@
+{
+  "name": "nodeassignment",
+  "version": "1.0.0",
+  "description": "Node Assignment modules",
+  "license": "ISC",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
