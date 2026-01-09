@@ -3,7 +3,8 @@ import './App.css';
 import Counter from './components/Counter.js';
 import StateLift from './components/StateLift.js';
 import TodoList from './components/TodoList.js';
-import FocusInput from './components/FocusInput';
+import FocusInput from './components/FocusInput.js';
+import ApiCall from './components/ApiCall.js';
 
 function App() {
   return (
@@ -27,6 +28,12 @@ function App() {
       <div className = "border">
         <h3>Assignment 4</h3>
         <FocusInput/>
+
+      </div>
+
+      <div className = "border">
+        <h3>Assignment 5</h3>
+        <ApiCall/>
 
       </div>
 
