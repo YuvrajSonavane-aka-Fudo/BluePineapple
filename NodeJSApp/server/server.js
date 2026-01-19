@@ -4,9 +4,9 @@ const csv = require("csv-parser");
 const multer = require("multer");
 const http = require("http");
 const { Server } = require("socket.io");
+const path = require("path");
 
 const app = express();
-const path = require("path");
 const server = http.createServer(app);
 const io = new Server(server);
 
@@ -16,39 +16,81 @@ app.use(express.static(path.join(__dirname, "../frontend")));
 const CSV_FILE = path.join(__dirname, "data.csv");
 const upload = multer({ dest: "uploads/" });
 
-app.get("/employees", (req, res) => {
-  const results = [];
-  if (!fs.existsSync(CSV_FILE)) return res.json(results);
-  fs.createReadStream(CSV_FILE)
-    .on("error", err => {
-      console.error("CSV read error:", err);
-      return res.status(500).json({ error: "CSV read error", message: err.message });
-    })
-    .pipe(csv())
-    .on("data", data => results.push(data))
-    .on("end", () => {
-      if (results.length > 0) {
-        const keys = Object.keys(results[0]);
-        if (keys.length && (/^_?0$/.test(keys[0]) || keys[0] === '0')) {
-          const mapped = results.map(r => ({
-            id: r._0 || r['0'] || "",
-            name: r._1 || r['1'] || "",
-            role: r._2 || r['2'] || ""
-          }));
-          if (mapped.length && /id/i.test(mapped[0].id) && /name/i.test(mapped[0].name)) mapped.shift();
-          return res.json(mapped);
-        }
+// Helper function to read CSV into an array
+const readCSV = () => {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    if (!fs.existsSync(CSV_FILE)) return resolve([]);
+    fs.createReadStream(CSV_FILE)
+      .pipe(csv())
+      .on("data", (data) => results.push(data))
+      .on("end", () => resolve(results))
+      .on("error", (err) => reject(err));
+  });
+};
+
+// Helper function to write array back to CSV
+const writeCSV = (data) => {
+  const header = "id,name,role\n";
+  const rows = data.map(emp => `${emp.id},${emp.name},${emp.role}`).join("\n");
+  fs.writeFileSync(CSV_FILE, header + rows);
+};
+
+app.get("/employees", async (req, res) => {
+  try {
+    const data = await readCSV();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "Read error" });
+  }
+});
+
+// --- NEW: BULK DELETE ---
+app.post("/employees/bulk-delete", async (req, res) => {
+  const { ids } = req.body; // Array of IDs to delete
+  try {
+    let data = await readCSV();
+    // Filter out the employees whose IDs are in the delete list
+    const filteredData = data.filter(emp => !ids.includes(emp.id));
+    writeCSV(filteredData);
+    res.json({ success: true, count: ids.length });
+  } catch (err) {
+    res.status(500).json({ error: "Bulk delete failed" });
+  }
+});
+
+// --- NEW: BULK UPDATE ---
+app.post("/employees/bulk-update", async (req, res) => {
+  const { employees } = req.body; // Array of employee objects {id, name, role}
+  try {
+    let data = await readCSV();
+    
+    // Create a map for quick lookup
+    const updateMap = new Map(employees.map(emp => [emp.id, emp]));
+
+    // Update existing rows or keep them as is
+    const updatedData = data.map(emp => {
+      if (updateMap.has(emp.id)) {
+        return updateMap.get(emp.id);
       }
-      return res.json(results);
+      return emp;
     });
+
+    writeCSV(updatedData);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Bulk update failed" });
+  }
 });
 
 app.post("/employees", (req, res) => {
   const { id, name, role } = req.body;
-  fs.appendFileSync(CSV_FILE, `\n${id},${name},${role}`);
+  const line = fs.existsSync(CSV_FILE) ? `\n${id},${name},${role}` : `id,name,role\n${id},${name},${role}`;
+  fs.appendFileSync(CSV_FILE, line);
   res.json({ success: true });
 });
 
+// ... (Rest of your code: upload, download, and socket.io remain the same)
 app.post("/upload", upload.single("file"), (req, res) => {
   fs.renameSync(req.file.path, CSV_FILE);
   res.json({ success: true });
@@ -60,27 +102,17 @@ app.get("/download", (req, res) => {
     res.setHeader("Content-Disposition", "attachment; filename=data.csv");
     res.setHeader("Content-Length", stat.size);
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    const stream = fs.createReadStream(CSV_FILE);
-    stream.on("error", err => {
-      console.error("Download stream error:", err);
-      if (!res.headersSent) res.status(500).end();
-    });
-    stream.pipe(res);
+    fs.createReadStream(CSV_FILE).pipe(res);
   } catch (err) {
-    console.error("Download error:", err);
-    return res.status(500).json({ error: "Download error", message: err.message });
+    res.status(500).json({ error: "Download error" });
   }
 });
 
 io.on("connection", socket => {
   setInterval(() => {
-    const time = new Date().toLocaleString("en-AU", {
-      timeZone: "Australia/Sydney"
-    });
+    const time = new Date().toLocaleString("en-AU", { timeZone: "Australia/Sydney" });
     socket.emit("time", time);
   }, 1000);
 });
 
-server.listen(3000, () =>
-  console.log("Server running at http://localhost:3000")
-);
+server.listen(3000, () => console.log("Server running at http://localhost:3000"));
