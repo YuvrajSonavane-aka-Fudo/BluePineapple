@@ -1,8 +1,5 @@
-order_id,customer_id,order_date,city,category,quantity,unit_price,di
-scount_pct,payment_mode
-
-1001,C001,2024-01-05,Bangalore,Electronics,2,45000,10,Credit Car
-d
+order_id,customer_id,order_date,city,category,quantity,unit_price,discount_pct,payment_mode
+1001,C001,2024-01-05,Bangalore,Electronics,2,45000,10,Credit Card
 1002,C002,2024-01-08,Mumbai,Fashion,3,2500,5,UPI
 1003,C003,2024-01-15,Delhi,Electronics,1,60000,15,Net Banking
 1004,C001,2024-02-02,Bangalore,Home,4,1200,0,Cash
