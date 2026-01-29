@@ -6,7 +6,6 @@
 #!moving left means row[i][j--] 
 
 
-
 def create(n):
     if n<0 or n%2==0:
         return None
